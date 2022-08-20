@@ -122,7 +122,7 @@ Rightmost
 Monadic testing
 ******************************************************************************
 
-> ensure :: Monad m => Bool -> m ()
+> ensure :: (Monad m, MonadFail m) => Bool -> m ()
 > ensure True  = return ()
 > ensure False = fail ""
 
@@ -185,6 +185,8 @@ Statey things
 >     = State $ \ s ->
 >         do (a,s') <- f s
 >            un (g a) s'
+
+> instance MonadFail m => MonadFail (State m s) where
 >   fail x = State $ \ _ -> fail x
 
 > get :: Monad m => (s -> a) -> State m s a

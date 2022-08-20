@@ -24,22 +24,22 @@ Some basic combinators
 > pE :: Monad m => Parser m i ()
 > pE = fun ()
 
-> pT :: Monad m => (i -> m o) -> Parser m i o
+> pT :: (MonadFail m, Monad m) => (i -> m o) -> Parser m i o
 > pT g = nu f where
 >   f (i : is) =
 >     do o <- g i
 >        return (o,is)
 >   f [] = fail ""
 
-> pEmpty :: Monad m => Parser m i ()
+> pEmpty :: (MonadFail m, Monad m) => Parser m i ()
 > pEmpty = nu f where
 >   f [] = return ((),[])
 >   f _  = fail ""
 
-> pI :: Monad m => Parser m i i
+> pI :: (MonadFail m, Monad m) => Parser m i i
 > pI = pT return
 
-> pCon :: (Monad m,Eq i) => i -> Parser m i ()
+> pCon :: (MonadFail m, Monad m,Eq i) => i -> Parser m i ()
 > pCon i = pT (ensure . (i ==))
 
 > pSeq1 :: (Monoidal (m ([x], [i])),Monad m) =>
@@ -54,7 +54,7 @@ Some basic combinators
 >         Parser m i x -> Parser m i (Maybe x)
 > pMay p = fun Just p <+> fun Nothing
 
-> pSkipTo :: (Eq i,Monoidal (m ()),Monoidal (m ((),[i])),Monad m) =>
+> pSkipTo :: (Eq i,Monoidal (m ()),Monoidal (m ((),[i])),Monad m, MonadFail m) =>
 >             i -> Parser m i ()
 > pSkipTo i = pT noti </> pSkipTo i <+> pE where
 >   noti j | i == j = m0
@@ -85,7 +85,7 @@ Computing parsers from types
 >   do (x,_) <- un blah is
 >      return x
 
-> reading :: Monad m => Parser m i x -> [i] -> m x
+> reading :: (MonadFail m, Monad m) => Parser m i x -> [i] -> m x
 > reading p is =
 >   do (x,[]) <- un p is
 >      return x
